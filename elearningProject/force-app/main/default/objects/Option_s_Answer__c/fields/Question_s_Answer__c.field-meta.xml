@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Question_s_Answer__c</fullName>
+    <externalId>false</externalId>
+    <label>Question&apos;s Answer</label>
+    <referenceTo>Question_s_Answer__c</referenceTo>
+    <relationshipLabel>Option&apos;s Answers</relationshipLabel>
+    <relationshipName>Option_s_Answers</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

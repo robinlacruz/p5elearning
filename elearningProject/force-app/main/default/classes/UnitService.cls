@@ -74,10 +74,18 @@ public class UnitService {
     public TrailWrapper getTrailWrapper(Id trailId){
 
         //Instancio trail wrapper con trail y modulos
-        TrailWrapper trailWrap = new TrailWrapper([SELECT Name, Description__c FROM Trail__c WHERE Id =: trailId], getModules(trailId), getModuleIdsCompleted(trailId), getUnitIdsCompleted(trailId));
+        TrailWrapper trailWrap = new TrailWrapper([SELECT Name, Description__c, Trail_Estimated_Time__c, Trail_Max_Score__c FROM Trail__c WHERE Id =: trailId], getModules(trailId), getModuleIdsCompleted(trailId), getUnitIdsCompleted(trailId));
 
         return trailWrap;
     }
+        // esto lo agregue luego (borrar)
+    public String getTrailName(Id trailId){
+
+        Trail__c trail1 = [SELECT Name, Description__c FROM Trail__c WHERE Id =: trailId];
+
+        return trail1.Name;
+    }
+        // borrar hasta aca
 
     private List<Module__c> getModules(Id trailId){
         //Busco modulos relacionados

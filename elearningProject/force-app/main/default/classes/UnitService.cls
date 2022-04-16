@@ -57,7 +57,7 @@ public class UnitService {
             this.modules = modules;
             this.passedModuleIds = passedModuleIds;
             this.passedUnitIds = passedUnitIds;
-            this.progressTrail = passedModuleIds.size() / modules.size();
+            this.progressTrail = passedModuleIds.size()*100 / modules.size();
         }
         //Configuracion
         public Trail__c trail; //Registro de Trail solicitado

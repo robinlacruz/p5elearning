@@ -1,8 +1,41 @@
-<template>
+<!-- <template>
     <h1>Trail View</h1>>
     <p>TrailId: {recordId}</p>
     <p>Trail Name: {name}</p>
     <p>Trail Description: {description}</p>
     <p>Trail Estimated Time: {trailTime}</p>
     <p>Trail Estimated Score: {trailScore}</p>
+    <p>Number of Modules: {NumberOfModules}</p>
+    <p>Number of Passed Modules: {numberOfPassedModules}</p>
+    <p>Trail Progress: {progressTrailPerc}%</p>
+</template> -->
+
+<template>
+    <lightning-card>
+        <h3 slot="title">
+            <lightning-icon icon-name="standard:article" size="small"></lightning-icon>
+            {name}
+        </h3>
+        <div slot="footer">
+            <template if:true={progressTrailPerc}>
+                <p class="slds-p-horizontal_small">{progressTrailPerc}%</p>
+                <lightning-progress-bar value={progressTrailPerc} size="large" variant="circular"></lightning-progress-bar>
+            </template>
+            <template if:false={progressTrailPerc}>
+                <template if:true={progressIsFalse}>
+                    <p class="slds-p-horizontal_small">Trail Not Started</p>
+                </template>
+                <template if:false={progressIsFalse}>
+                    <p class="slds-p-horizontal_small">Trail Completed!</p>
+                </template>
+            </template>
+             
+        </div>
+        <p class="slds-p-horizontal_small">{description}</p>
+        <p class="slds-p-horizontal_small">Trail Estimated Time: {trailTime}</p>
+        <p class="slds-p-horizontal_small">Trail Estimated Score: {trailScore}</p>
+        <p class="slds-p-horizontal_small">Number of Modules: {NumberOfModules}</p> 
+        <p class="slds-p-horizontal_small">Number of Passed Modules: {numberOfPassedModules}</p>
+
+    </lightning-card>
 </template>

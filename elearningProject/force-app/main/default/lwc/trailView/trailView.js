@@ -1,77 +1,38 @@
 import { LightningElement, api, wire } from 'lwc';
-/* import NAME_FIELD from '@salesforce/schema/Trail__c.Name';
-import DESCRIPTION_FIELD from '@salesforce/schema/Trail__c.Description__c';
-import TRAILTIME_FIELD from '@salesforce/schema/Trail__c.Trail_Estimated_Time__c';
-import TRAILSCORE_FIELD from '@salesforce/schema/Trail__c.Trail_Max_Score__c'; */
-import getTrail from '@salesforce/apex/TrailController.getTrail';
-import getProgressTrail from '@salesforce/apex/TrailController.getProgressTrail';
-import getPassedModuleIds from '@salesforce/apex/TrailController.getPassedModuleIds';
-import getModules from '@salesforce/apex/TrailController.getModules';
 
-/* const FIELDS = [
-    'Trail__c.Name',
-    'Trail__c.Description__c',
-    'Trail__c.Trail_Estimated_Time__c',
-    'Trail__c.Trail_Max_Score__c',
-]; */
+import getTrailWrap from '@salesforce/apex/TrailController.getTrailWrap';
+
 
 export default class TrailView extends LightningElement {
     
   @api recordId;
+  trailName;
+  trailDescription;
+  trailEstimatedTime;
+  trailMaxScore;
+  trailProgress;
+  trailCompleted;
 
-  @wire(getTrail, {trailId : '$recordId'/* , fields : FIELDS */})
-  trail;
-  @wire(getProgressTrail, {trailId : '$recordId'})
-  progressTrail;
-  @wire(getPassedModuleIds, {trailId : '$recordId'})
-  passedModuleIds;
-  @wire(getModules, {trailId: '$recordId'})
-  Modules; 
-
-get name() {
-    //console.log('hay console.log: ',this.trail.data);
-    return this.trail.data?.Name || '';
+  
+  @wire(getTrailWrap, {trailId: '$recordId'})
+  showTrailWrap({data, error}){
+    if(data){
+        this.trailName = data.trail.Name;
+        this.trailDescription = data.trail.Description__c;
+        this.trailEstimatedTime = data.trail.Trail_Estimated_Time__c;
+        this.trailMaxScore = data.trail.Trail_Max_Score__c;
+        if(data.progressTrail) this.trailProgress = data.progressTrail;
+        if(data.progressTrail==100) this.trailCompleted = true;
+    }else if(error){
+        console.log('HUBO UN ERROR------>',error);
     }
+  }
 
-get description() {
-    return this.trail.data?.Description__c || '';
-    }
-
-get trailTime() {
-    return this.trail.data?.Trail_Estimated_Time__c || '';
-    }
-
-get trailScore() {
-    return this.trail.data?.Trail_Max_Score__c || '';
-    }
-
-get fulltrail() {
-        return this.trail.data;
-    } 
-
-get progressIsFalse() {
-    if(this.progressTrail.data==0){
+  get trailNotStarted(){
+    if(this.trailProgress==0){
         return true;
-        } else if(this.progressTrail.data==100){
+    } else {
         return false;
-        }
     }
-
-get progressTrailPerc() {
-    if(this.progressTrail.data>0 && this.progressTrail.data<100)
-        return this.progressTrail.data;
-    }
-
-get numberOfPassedModules() {
-        return this.passedModuleIds.data?.length||0;
-    }
-
-get NumberOfModules() {
-        return this.Modules.data?.length||0;
-    }
-
-/* get showTrailWrap() {
-    console.log('el trailWrap trae: ',JSON.stringify(this.trailWrap?.data) || 'no hay nada en data');
-    return JSON.stringify(this.trailWrapList[0]);
-    } */
+  }
 }

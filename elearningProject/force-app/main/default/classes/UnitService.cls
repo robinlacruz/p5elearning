@@ -60,17 +60,23 @@ public class UnitService {
             this.progressTrail = passedModuleIds.size()*100 / modules.size();
         }
         //Configuracion
+        @AuraEnabled
         public Trail__c trail; //Registro de Trail solicitado
+        @AuraEnabled
         public List<Module__c> modules; //Módulos con Unidades relacionadas
         
         //Transaccional
+        //@AuraEnabled
         public Set<Id> passedModuleIds; //Ids de módulos relacionados al Trail actual en los que el Alumno ya aprobó
+        //@AuraEnabled
         public Set<Id> passedUnitIds; //Ids de Unidades relacionadas a módulos del Trail actual que el Alumno ya aprobó
+        @AuraEnabled
         public Integer progressTrail; //Porcentaje de progreso del Alumno en el Trail     
 
     }
 
     //Metodos
+    
     public TrailWrapper getTrailWrapper(Id trailId){
 
         //Instancio trail wrapper con trail y modulos

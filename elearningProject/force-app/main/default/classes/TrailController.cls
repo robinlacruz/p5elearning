@@ -5,4 +5,5 @@ public with sharing class TrailController {
         UnitService us = new UnitService();
         return us.getTrailWrapper(trailId);
     }
+
 }

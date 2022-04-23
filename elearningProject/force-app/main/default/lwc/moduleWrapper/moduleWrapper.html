@@ -1,0 +1,43 @@
+<template>
+    <lightning-card>
+        <h3 slot="title">
+            &emsp;<lightning-icon icon-name="utility:connected_apps" size="small"></lightning-icon>
+            {modwrapp.module.Name}&emsp;
+            <lightning-icon if:true={modwrapp.status} icon-name="utility:success" variant="Success" size="medium (default)"></lightning-icon>
+        </h3>
+        <p>Module Id: {modwrapp.module.Id}</p>
+        <p>Module Name: {modwrapp.module.Name}</p>
+        <p>Module Estimated Time: {modwrapp.module.Estimated_Time__c}</p>
+        <p>Module Max Score: {modwrapp.module.Max_Score__c}</p>
+        <p>Module Completed: {modwrapp.status}</p>  
+        <lightning-card>
+            <h3 slot="title">
+                &emsp;&emsp;&emsp;<lightning-icon icon-name="utility:connected_apps" size="small"></lightning-icon>
+                Units
+            </h3>
+            <div class="slds-p-horizontal_small">
+               <div if:true={unitWraps}>
+                    <template for:each={unitWraps} for:item="unitWrap">
+                        <div key={unitWrap.unit.Id}>
+                            <lightning-card>
+                                <h3 slot="title">&emsp;
+                                    &emsp;&emsp;&emsp;&nbsp;<lightning-icon icon-name="utility:connected_apps" size="small"></lightning-icon>
+                                    {unitWrap.unit.Name}&emsp;
+                                    <lightning-icon if:true={unitWrap.isCompleted} icon-name="utility:success" variant="Success" size="medium (default)"></lightning-icon>
+                                </h3>
+                                <p>&emsp;&emsp;&emsp;&emsp;&emsp;Unit Id.: {unitWrap.unit.Id}</p>
+                                <p>&emsp;&emsp;&emsp;&emsp;&emsp;Unit Estimated Time: {unitWrap.unit.Estimated_time__c}</p>
+                                <p>&emsp;&emsp;&emsp;&emsp;&emsp;Unit Completed: {unitWrap.isCompleted}</p>
+                                
+                            </lightning-card>
+                        </div>
+                    </template>
+                </div>
+                <div if:false={unitWraps}>Esto se imprime si unitWraps es falsy</div>
+            
+            </div>
+        </lightning-card>
+
+
+    </lightning-card>
+</template>

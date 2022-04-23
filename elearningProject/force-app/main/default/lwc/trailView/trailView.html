@@ -38,21 +38,8 @@
            <div if:true={modulesWithCheck}>
                 <template for:each={modulesWithCheck} for:item="moduleWithCkeck">
                     <div key={moduleWithCkeck.module.Id}>
-                        <lightning-card>
-                            <h3 slot="title">
-                                <lightning-icon icon-name="utility:connected_apps" size="small"></lightning-icon>
-                                &nbsp;{moduleWithCkeck.module.Name}&emsp;
-                                <lightning-icon if:true={moduleWithCkeck.status} icon-name="utility:success" variant="Success" size="medium (default)"></lightning-icon>
-                            </h3>
-                            <p>Module Id: {moduleWithCkeck.module.Id}</p>
-                            <p>Module Name: {moduleWithCkeck.module.Name}</p>
-                            <p>Module Estimated Time: {moduleWithCkeck.module.Estimated_Time__c}</p>
-                            <p>Module Max Score: {moduleWithCkeck.module.Max_Score__c}</p>
-                            <p>Module Completed: {moduleWithCkeck.status}</p>   
-
-                        </lightning-card>  
+                        <c-module-wrapper modwrapp={moduleWithCkeck} moduleid={moduleWithCkeck.module.Id} ></c-module-wrapper>
                     </div>
-
                 </template>
             </div>
         

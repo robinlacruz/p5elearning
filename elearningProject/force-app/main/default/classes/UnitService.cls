@@ -128,13 +128,18 @@ public class UnitService {
     /**********Class UnitWrapper************/
     public class UnitWrapper{
         //varibles
+        @AuraEnabled
         public Unit__c unit;
+        @AuraEnabled
         public List<Question__c> questions;
+        @AuraEnabled
+        public Boolean isCompleted;
         
         //Constructor
-        public UnitWrapper(Unit__c unit, List<Question__c> questions){
+        public UnitWrapper(Unit__c unit, List<Question__c> questions, Boolean isCompleted){
             this.unit = unit;
             this.questions = questions;
+            this.isCompleted = isCompleted;
         }
     }
     
@@ -142,7 +147,8 @@ public class UnitService {
     public UnitWrapper getUnitWrapper(Id unitId){
 
         //Query to Unit
-        unit__c unit = [SELECT Id, Name, Content__c, Estimated_time__c, Max_Score__c, Test_Type__c 
+        Unit__c unit = [SELECT Id, Name, Content__c, Estimated_time__c, Max_Score__c, Test_Type__c/* ,
+                        (SELECT Unit_completed__c, UserId__c FROM Units_progress__r WHERE UserId__c =: Userinfo.getUserId() ORDER BY Num_of_tries__c DESC LIMIT 1) */ 
                         FROM Unit__c 
                         WHERE Id = :unitId];
         
@@ -150,8 +156,22 @@ public class UnitService {
             SELECT Id, Name, Query__c, (SELECT Id, Name, Description__c, isRight__c FROM Options__r) 
             FROM Question__c 
             WHERE Unit__c = :unitId];
-                
-        return new UnitWrapper(unit, questionsList);
+
+        List<Unit_progress__c> unitCompleted = [SELECT Unit_completed__c, UserId__c FROM Unit_progress__c WHERE Unit__c =: unitId /* AND UserId__c =: Userinfo.getUserId() */ ORDER BY Num_of_tries__c DESC LIMIT 1];
+        Boolean completed = false;
+        if (unitCompleted.size()!=0) {
+            completed = unitCompleted[0].Unit_completed__c;
+        }
+        return new UnitWrapper(unit, questionsList, completed);
+    }
+
+    public List<UnitWrapper> getUnitWrapsByModule(Id moduleId){
+        //Query to Unit
+        List<UnitWrapper> unitWrapsByModule = new List<UnitWrapper>();
+        for (Unit__c unit: [SELECT Id FROM Unit__c WHERE Module__c = :moduleId]){
+            unitWrapsByModule.add(getUnitWrapper(unit.Id));
+        } 
+        return unitWrapsByModule;    
     }
 
     /**********Class ModuleWrapper************/

@@ -66,6 +66,7 @@ public class UnitService {
         @AuraEnabled
         public List<Module__c> modules; //Módulos con Unidades relacionadas
         
+        
         //Transaccional
         @AuraEnabled
         public List<Id> passedModuleIds; //Ids de módulos relacionados al Trail actual en los que el Alumno ya aprobó
@@ -116,7 +117,7 @@ public class UnitService {
         return new List<Id>(completedModuleIds);
     }
     private List<Id> getUnitIdsCompleted(Id trailId){
-        List<Unit_progress__c> unitResponses = [SELECT Unit__c FROM Unit_progress__c WHERE Unit_completed__c = true AND UserId__c =: Userinfo.getUserId() AND Unit__r.Module__c IN :getModules (trailId)];
+        List<Unit_progress__c> unitResponses = [SELECT Unit__c FROM Unit_progress__c WHERE Unit_completed__c = true AND Module_Progress__r.User__c =: Userinfo.getUserId() AND Unit__r.Module__c IN :getModules (trailId)];
         Set<Id> completedUnitIds = new Set<Id>();
         for(Unit_progress__c unitResp : unitResponses){
             completedUnitIds.add(unitResp.Unit__c);
@@ -142,37 +143,73 @@ public class UnitService {
             this.isCompleted = isCompleted;
         }
     }
-    
-    //UnitWrapper's Methods
-    public UnitWrapper getUnitWrapper(Id unitId){
 
-        //Query to Unit
-        Unit__c unit = [SELECT Id, Name, Content__c, Estimated_time__c, Max_Score__c, Test_Type__c/* ,
-                        (SELECT Unit_completed__c, UserId__c FROM Units_progress__r WHERE UserId__c =: Userinfo.getUserId() ORDER BY Num_of_tries__c DESC LIMIT 1) */ 
-                        FROM Unit__c 
-                        WHERE Id = :unitId];
-        
-        List<Question__c> questionsList = [
-            SELECT Id, Name, Query__c, (SELECT Id, Name, Description__c, isRight__c FROM Options__r) 
-            FROM Question__c 
-            WHERE Unit__c = :unitId];
+    private List<id> getUnitIdsByModule(Id moduleId){
+        List<Unit__c> unitsByModule = [SELECT Id FROM Unit__c WHERE Module__c = :moduleId];
+        List<Id> unitIdsByModule = new List<Id>();
+        for (Unit__c unit: unitsByModule){
+            unitIdsByModule.add(unit.Id);
+        } 
+        return unitIdsByModule;
+    }
 
-        List<Unit_progress__c> unitCompleted = [SELECT Unit_completed__c, UserId__c FROM Unit_progress__c WHERE Unit__c =: unitId /* AND UserId__c =: Userinfo.getUserId() */ ORDER BY Num_of_tries__c DESC LIMIT 1];
-        Boolean completed = false;
-        if (unitCompleted.size()!=0) {
-            completed = unitCompleted[0].Unit_completed__c;
+    private Map<Id,Unit__c> getUnitsByModule(Id moduleId){
+        return new Map<Id,Unit__c>([SELECT Id, Name, Content__c, Estimated_time__c, Max_Score__c, Test_Type__c, (SELECT Unit_completed__c FROM Units_progress__r WHERE UserId__c =:Userinfo.getUserId()), (SELECT Name FROM Questions__r)
+        FROM Unit__c 
+        WHERE Id IN :getUnitIdsByModule(moduleId)]);
+    }
+
+    private Map<Id,List<Id>> getMapOfQuestionsIdsByUnitId(Id moduleId){
+        List<Unit__c> unitsWithQuestionIds=[SELECT Id,(SELECT Id FROM Questions__r) FROM Unit__c WHERE Module__c =:moduleId];
+        Map<Id,List<Id>> questionIdsByUnitId = new Map<Id,List<Id>>();
+        for (Unit__c unit:unitsWithQuestionIds){
+            List<Id> questionsIds = new List<Id>();
+            for(Question__c question:unit.Questions__r){
+                questionsIds.add(question.Id);
+            }
+            questionIdsByUnitId.put(unit.Id,questionsIds);
         }
-        return new UnitWrapper(unit, questionsList, completed);
+        return questionIdsByUnitId;
+    }
+
+    private Map<Id,Question__c> getMapOfQuestionsByQuestionId(Id moduleId){
+        return new Map<Id,Question__c>([SELECT Id, Name, Query__c, Unit__c, (SELECT Id, Name, Description__c, isRight__c FROM Options__r) FROM Question__c WHERE Unit__r.Module__c =:moduleId]);
+    }
+
+    private Map<Id,List<Question__c>> getMapOfQuestionsByUnitId(id moduleId){
+        
+        Map<Id,List<Id>> questionsIdsByUnitId = getMapOfQuestionsIdsByUnitId(moduleId);
+        
+        Map<Id,Question__c> questionsInModule = getMapOfQuestionsByQuestionId(moduleId);
+        
+        Map<Id,List<Question__c>> mapOfQuestionsByUnitId = new Map<Id,List<Question__c>>();
+        for (Id unitId : questionsIdsByUnitId.keySet()){
+            List<Question__c> questionsList = new List<Question__c>();
+            for (Id questionId : questionsIdsByUnitId.get(unitId)){
+                questionsList.add(questionsInModule.get(questionId));
+            }
+            mapOfQuestionsByUnitId.put(unitId,questionsList);
+        }
+        return mapOfQuestionsByUnitId;
     }
 
     public List<UnitWrapper> getUnitWrapsByModule(Id moduleId){
-        //Query to Unit
+        Map<Id,Unit__c> mapOfUnitsByUnitIds = getUnitsByModule(moduleId);
+        //Map<Id,List<Id>> mapOfQuestionsIdsByUnitId = getMapOfQuestionsIdsByUnitId(moduleId);
+        Map<Id,List<Question__c>> mapOfQuestionsByUnitId = getMapOfQuestionsByUnitId(moduleId);
+        //List<Id> unitIdsOfModule = getUnitIdsByModule(moduleId);
         List<UnitWrapper> unitWrapsByModule = new List<UnitWrapper>();
-        for (Unit__c unit: [SELECT Id FROM Unit__c WHERE Module__c = :moduleId]){
-            unitWrapsByModule.add(getUnitWrapper(unit.Id));
-        } 
-        return unitWrapsByModule;    
+        
+        for (Id unitId:mapOfUnitsByUnitIds.keySet()){
+            Boolean completed = false;
+            if(mapOfUnitsByUnitIds.get(unitId).Units_progress__r.size()>0){
+                    completed = mapOfUnitsByUnitIds.get(unitId).Units_progress__r[0].Unit_completed__c;
+            }
+            unitWrapsByModule.add(new UnitWrapper(mapOfUnitsByUnitIds.get(unitId), mapOfQuestionsByUnitId.get(unitId), completed));
+        }
+        return unitWrapsByModule;
     }
+
 
     /**********Class ModuleWrapper************/
     public class ModuleWrapper{
